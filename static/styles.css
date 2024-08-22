@@ -1,0 +1,30 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+h1 {
+    color: #333;
+}
+
+p, li {
+    font-size: 18px;
+}
+
+input[type="text"] {
+    font-size: 20px;
+    padding: 5px;
+    width: 300px;
+}
+
+button {
+    font-size: 18px;
+    padding: 10px 20px;
+    margin-top: 10px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #eee;
+}

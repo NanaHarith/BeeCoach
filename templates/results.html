@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results</title>
+</head>
+<body>
+    <h1>Results</h1>
+
+    <p>Total correct: {{ score.correct }}</p>
+    <p>Total incorrect: {{ score.incorrect }}</p>
+
+    <h2>Correct Responses:</h2>
+    <ul>
+        {% for word in correct_words %}
+            <li>{{ word }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Incorrect Responses:</h2>
+    <ul>
+        {% for word in incorrect_words %}
+            <li>{{ word }}</li>
+        {% endfor %}
+    </ul>
+
+    <a href="/">Back to Game</a>
+</body>
+</html>

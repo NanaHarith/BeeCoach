@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Bee</title>
+</head>
+<body>
+    <h1>Spelling Bee</h1>
+
+    <p>Word: <span id="word-number">{{ current_word_number }}</span>/<span id="total-words">{{ total_words }}</span></p>
+
+    <p>Score: Correct: <span id="correct">{{ score.correct }}</span> | Incorrect: <span id="incorrect">{{ score.incorrect }}</span></p>
+
+    <form id="spelling-form">
+        <input type="text" id="user-input" name="user_input" required autofocus>
+        <button type="submit">Submit</button>
+    </form>
+
+    <button id="next-word">Next Word</button>
+    <button id="repeat">Repeat</button>
+
+    <a href="/results">Results</a>
+
+    <div id="result"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('spelling-form');
+            const userInput = document.getElementById('user-input');
+            const nextWordButton = document.getElementById('next-word');
+            const repeatButton = document.getElementById('repeat');
+            const wordNumberElement = document.getElementById('word-number');
+            const resultElement = document.getElementById('result');
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                fetch('/submit', {
+                    method: 'POST',
+                    body: new FormData(form)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    resultElement.textContent = data.result;
+                    updateScore(data.score);
+                    wordNumberElement.textContent = data.next_word_number;
+                    userInput.value = '';
+                    userInput.focus();
+                });
+            });
+
+            nextWordButton.addEventListener('click', function() {
+                fetch('/next_word')
+                .then(response => response.json())
+                .then(data => {
+                    wordNumberElement.textContent = data.word_number;
+                    userInput.value = '';
+                    userInput.focus();
+                });
+            });
+
+            repeatButton.addEventListener('click', function() {
+                fetch('/next_word')
+                .then(response => response.json())
+                .then(data => {
+                    // This will trigger the audio to play again without changing the word
+                });
+            });
+
+            function updateScore(score) {
+                document.getElementById('correct').textContent = score.correct;
+                document.getElementById('incorrect').textContent = score.incorrect;
+            }
+
+            // Set focus to input field when page loads
+            userInput.focus();
+        });
+    </script>
+</body>
+</html>
