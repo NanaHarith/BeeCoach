@@ -1,25 +1,23 @@
+import os
+import time
 from flask import Flask, render_template, request, jsonify, session
 from flask_socketio import SocketIO
 import csv
 from threading import Thread
 import queue
-from playsound3 import playsound
 from gtts import gTTS
-import os
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)  # Set a secret key for session
+app.secret_key = os.urandom(24)
 socketio = SocketIO(app)
 
 words_list = []
 audio_queue = queue.Queue()
 
-
 def read_words(file):
     with open(file, 'r') as f:
         reader = csv.DictReader(f)
         return [row['Words'] for row in reader]
-
 
 def play_audio_worker():
     while True:
@@ -27,10 +25,20 @@ def play_audio_worker():
         if text is None:
             break
         tts = gTTS(text=text, lang='en')
-        tts.save('temp.mp3')
-        playsound('temp.mp3')
-        audio_queue.task_done()
+        file_name = 'wide.mp3'
+        file_path = os.path.join('static', file_name)
+        tts.save(file_path)
 
+        # Confirm file creation and allow some time for writing
+        for _ in range(5):  # Retry 5 times with delay to ensure file is written
+            if os.path.exists(file_path):
+                print(f"File created successfully: {file_path}")
+                break
+            time.sleep(0.2)  # Adjust delay as necessary
+        else:
+            print(f"Error: File not found after creation attempt: {file_path}")
+
+        audio_queue.task_done()
 
 @app.before_request
 def before_request():
@@ -40,23 +48,24 @@ def before_request():
         session['incorrect_words'] = []
         session['current_word_index'] = 0
 
-
-# ... (previous imports and setup remain the same)
-
 @app.route('/')
 def index():
     global words_list
     if not words_list:
-        words_list = read_words('static/Words.csv')
+        words_list = read_words('static/words.csv')
 
     if session['current_word_index'] >= len(words_list):
         session['current_word_index'] = 0
 
-    current_word = words_list[session['current_word_index']]
-    audio_queue.put(current_word)
     return render_template('index.html', total_words=len(words_list), score=session['score'],
                            current_word_number=session['current_word_index'] + 1)
 
+@app.route('/start_practice', methods=['POST'])
+def start_practice():
+    global words_list
+    current_word = words_list[session['current_word_index']]
+    audio_queue.put(current_word)
+    return jsonify({'success': True})
 
 @app.route('/submit', methods=['POST'])
 def submit():
@@ -87,7 +96,6 @@ def submit():
         'next_word_number': session['current_word_index'] + 1
     })
 
-
 @app.route('/next_word')
 def next_word():
     global words_list
@@ -102,9 +110,6 @@ def next_word():
         'word_number': session['current_word_index'] + 1
     })
 
-
-# ... (rest of the code remains the same)
-
 @app.route('/repeat_word')
 def repeat_word():
     global words_list
@@ -113,15 +118,15 @@ def repeat_word():
     return jsonify({
         'success': True
     })
+
 @app.route('/results')
 def results():
     return render_template('results.html', score=session['score'],
                            correct_words=session['correct_words'],
                            incorrect_words=session['incorrect_words'])
 
-
 if __name__ == '__main__':
-    words_list = read_words('static/Words.csv')
+    words_list = read_words('static/words.csv')
     print(f"Total words: {len(words_list)}")
     print(f"First word: {words_list[0]}")
 

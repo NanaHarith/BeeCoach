@@ -12,13 +12,14 @@
 
     <p>Score: Correct: <span id="correct">{{ score.correct }}</span> | Incorrect: <span id="incorrect">{{ score.incorrect }}</span></p>
 
-    <form id="spelling-form">
+    <form id="spelling-form" style="display:none;">
         <input type="text" id="user-input" name="user_input" required autofocus>
         <button type="submit">Submit</button>
     </form>
 
-    <button id="next-word">Next Word</button>
-    <button id="repeat">Repeat</button>
+    <button id="start-practice">Start Practice</button>
+    <button id="next-word" style="display:none;">Next Word</button>
+    <button id="repeat" style="display:none;">Repeat</button>
 
     <a href="/results">Results</a>
 
@@ -27,12 +28,28 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const startPracticeButton = document.getElementById('start-practice');
             const form = document.getElementById('spelling-form');
             const userInput = document.getElementById('user-input');
             const nextWordButton = document.getElementById('next-word');
             const repeatButton = document.getElementById('repeat');
             const wordNumberElement = document.getElementById('word-number');
             const resultElement = document.getElementById('result');
+
+            startPracticeButton.addEventListener('click', function() {
+                fetch('/start_practice', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        form.style.display = 'block';
+                        startPracticeButton.style.display = 'none';
+                        nextWordButton.style.display = 'block';
+                        repeatButton.style.display = 'block';
+                    }
+                });
+            });
 
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -61,11 +78,8 @@
             });
 
             repeatButton.addEventListener('click', function() {
-                fetch('/next_word')
-                .then(response => response.json())
-                .then(data => {
-                    // This will trigger the audio to play again without changing the word
-                });
+                fetch('/repeat_word')
+                .then(response => response.json());
             });
 
             function updateScore(score) {
