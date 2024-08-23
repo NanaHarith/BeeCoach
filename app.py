@@ -5,6 +5,7 @@ from flask import Flask, render_template, request, jsonify, session
 from flask_socketio import SocketIO
 import csv
 from gtts import gTTS
+import random
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -145,8 +146,10 @@ def results():
 @app.route('/randomize', methods=['POST'])
 def randomize():
     global words_list
+    print("Randomizing..")
     random.shuffle(words_list)
     session['current_word_index'] = 0
+    print(current_word)
     current_word = words_list[session['current_word_index']]
     session.modified = True
     return jsonify({
