@@ -123,6 +123,20 @@ def repeat_word():
     })
 
 
+@app.route('/reset', methods=['POST'])
+def reset():
+    session['score'] = {'correct': 0, 'incorrect': 0}
+    session['correct_words'] = []
+    session['incorrect_words'] = []
+    session['current_word_index'] = 0
+    session.modified = True
+    return jsonify({
+        'success': True,
+        'score': session['score'],
+        'word_number': session['current_word_index'] + 1
+    })
+
+
 @app.route('/results')
 def results():
     return render_template('results.html', score=session['score'],

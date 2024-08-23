@@ -4,23 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spelling Bee</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Spelling Bee</h1>
+    <div class="container">
+        <h1>Spelling Bee</h1>
 
-    <p>Word: <span id="word-number">{{ current_word_number }}</span>/<span id="total-words">{{ total_words }}</span></p>
+        <div class="info">
+            <p>Word: <span id="word-number">{{ current_word_number }}</span>/<span id="total-words">{{ total_words }}</span></p>
+            <p>Score: Correct: <span id="correct">{{ score.correct }}</span> | Incorrect: <span id="incorrect">{{ score.incorrect }}</span></p>
+        </div>
 
-    <p>Score: Correct: <span id="correct">{{ score.correct }}</span> | Incorrect: <span id="incorrect">{{ score.incorrect }}</span></p>
+        <div class="input-area">
+            <input type="text" id="user-input" autofocus>
+            <button onclick="submitWord()" class="btn primary">Submit</button>
+        </div>
 
-    <input type="text" id="user-input">
-    <button onclick="submitWord()">Submit</button>
-    <button onclick="startPractice()">Start Practice</button>
-    <button onclick="nextWord()">Next Word</button>
-    <button onclick="repeatWord()">Repeat</button>
+        <div class="controls">
+            <button onclick="startPractice()" class="btn">Start Practice</button>
+            <button onclick="nextWord()" class="btn">Next Word</button>
+            <button onclick="repeatWord()" class="btn">Repeat</button>
+            <button onclick="resetGame()" class="btn warning">Reset</button>
+        </div>
 
-    <a href="/results">Results</a>
+        <a href="/results" class="results-link">Results</a>
 
-    <div id="result"></div>
+        <div id="result" class="result"></div>
+    </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
@@ -41,6 +51,7 @@
             .then(data => {
                 if (data.success) {
                     playAudio(data.word);
+                    document.getElementById('user-input').focus();
                 }
             });
     }
@@ -75,6 +86,33 @@
                 }
             });
     }
+
+    function resetGame() {
+        fetch('/reset', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('correct').innerText = data.score.correct;
+                    document.getElementById('incorrect').innerText = data.score.incorrect;
+                    document.getElementById('word-number').innerText = data.word_number;
+                    document.getElementById('result').innerText = '';
+                    document.getElementById('user-input').value = '';
+                    startPractice();
+                }
+            });
+    }
+
+    // Add event listener for Enter key
+    document.getElementById('user-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            submitWord();
+        }
+    });
+
+    // Focus on input field when page loads
+    window.onload = function() {
+        document.getElementById('user-input').focus();
+    };
     </script>
 </body>
 </html>
