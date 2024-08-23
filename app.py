@@ -25,16 +25,18 @@ def play_audio_worker():
         if text is None:
             break
         tts = gTTS(text=text, lang='en')
-        file_name = 'wide.mp3'
+        file_name = 'tempWord.mp3'
         file_path = os.path.join('static', file_name)
         tts.save(file_path)
 
         # Confirm file creation and allow some time for writing
         for _ in range(5):  # Retry 5 times with delay to ensure file is written
             if os.path.exists(file_path):
-                print(f"File created successfully: {file_path}")
+                full_path = os.path.abspath(file_path)
+                print(full_path)
+                print(f"File created successfully: {full_path}")
                 break
-            time.sleep(0.2)  # Adjust delay as necessary
+            time.sleep(.2)  # Adjust delay as necessary
         else:
             print(f"Error: File not found after creation attempt: {file_path}")
 

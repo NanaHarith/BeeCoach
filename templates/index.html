@@ -25,6 +25,8 @@
 
     <div id="result"></div>
 
+    <audio id="wordAudio" controls style="display: none;"></audio>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -35,6 +37,7 @@
             const repeatButton = document.getElementById('repeat');
             const wordNumberElement = document.getElementById('word-number');
             const resultElement = document.getElementById('result');
+            const wordAudio = document.getElementById('wordAudio');  // Reference the audio element
 
             startPracticeButton.addEventListener('click', function() {
                 fetch('/start_practice', {
@@ -64,6 +67,11 @@
                     wordNumberElement.textContent = data.next_word_number;
                     userInput.value = '';
                     userInput.focus();
+
+                    // Update audio source and play when new word received
+                    wordAudio.src = "/static/tempWord.mp3";  // Set source based on your file path
+                    wordAudio.load();  // Load the audio data
+                    wordAudio.play();   // Start playback
                 });
             });
 
@@ -74,12 +82,22 @@
                     wordNumberElement.textContent = data.word_number;
                     userInput.value = '';
                     userInput.focus();
+
+                    // Update audio source and play when next word requested
+                    wordAudio.src = "/static/tempWord.mp3";
+                    wordAudio.load();
+                    wordAudio.play();
                 });
             });
 
             repeatButton.addEventListener('click', function() {
                 fetch('/repeat_word')
                 .then(response => response.json());
+
+                // Update audio source and play on repeat button click
+                wordAudio.src = "/static/tempWord.mp3";
+                wordAudio.load();
+                wordAudio.play();
             });
 
             function updateScore(score) {
