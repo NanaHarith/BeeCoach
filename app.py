@@ -20,14 +20,12 @@ audio_cache = {}
 audio_queue = queue.Queue()
 initialization_done = False
 
-
 def read_words(file):
     with open(file, 'r') as f:
         reader = csv.DictReader(f)
         words = [row['Words'] for row in reader]
         print(f"Loaded {len(words)} words from {file}")
         return words
-
 
 @lru_cache(maxsize=1000)
 def generate_audio(word):
@@ -36,7 +34,6 @@ def generate_audio(word):
     tts.write_to_fp(fp)
     fp.seek(0)
     return base64.b64encode(fp.getvalue()).decode('utf-8')
-
 
 def audio_worker():
     while True:
@@ -47,7 +44,6 @@ def audio_worker():
             except Exception as e:
                 print(f"Error generating audio for '{word}': {str(e)}")
         audio_queue.task_done()
-
 
 def initialize_app():
     global words_list, initialization_done
@@ -61,7 +57,6 @@ def initialize_app():
 
         initialization_done = True
 
-
 @app.before_request
 def before_request():
     initialize_app()
@@ -72,14 +67,12 @@ def before_request():
         session['current_word_index'] = 0
     session.modified = True
 
-
 @app.route('/')
 def index():
     if session['current_word_index'] >= len(words_list):
         session['current_word_index'] = 0
     return render_template('index.html', total_words=len(words_list), score=session['score'],
                            current_word_number=session['current_word_index'] + 1)
-
 
 @app.route('/get_audio', methods=['GET'])
 def get_audio():
@@ -92,17 +85,12 @@ def get_audio():
     while current_word not in audio_cache:
         time.sleep(0.1)
         if time.time() > timeout:
-            # If timeout occurs, generate audio synchronously
-            try:
-                audio_cache[current_word] = generate_audio(current_word)
-            except Exception as e:
-                return jsonify({'error': f'Audio generation failed: {str(e)}'}), 500
+            return jsonify({'error': 'Audio generation timed out'}), 500
 
     return jsonify({
         'audio_data': audio_cache[current_word],
         'word': current_word
     })
-
 
 @app.route('/start_practice', methods=['POST'])
 def start_practice():
@@ -110,7 +98,6 @@ def start_practice():
         session['current_word_index'] = 0
     current_word = words_list[session['current_word_index']]
     return jsonify({'success': True, 'word': current_word})
-
 
 @app.route('/submit', methods=['POST'])
 def submit():
@@ -142,7 +129,6 @@ def submit():
         'word': next_word
     })
 
-
 @app.route('/next_word', methods=['GET'])
 def next_word():
     session['current_word_index'] += 1
@@ -156,7 +142,6 @@ def next_word():
         'word': current_word
     })
 
-
 @app.route('/repeat_word', methods=['GET'])
 def repeat_word():
     if session['current_word_index'] >= len(words_list):
@@ -166,7 +151,6 @@ def repeat_word():
         'success': True,
         'word': current_word
     })
-
 
 @app.route('/reset', methods=['POST'])
 def reset():
@@ -181,13 +165,11 @@ def reset():
         'word_number': session['current_word_index'] + 1
     })
 
-
 @app.route('/results')
 def results():
     return render_template('results.html', score=session['score'],
                            correct_words=session['correct_words'],
                            incorrect_words=session['incorrect_words'])
-
 
 @app.route('/randomize', methods=['POST'])
 def randomize():
@@ -199,7 +181,6 @@ def randomize():
         'word_number': session['current_word_index'] + 1,
         'word': current_word
     })
-
 
 if __name__ == '__main__':
     socketio.run(app, allow_unsafe_werkzeug=True, debug=True)
