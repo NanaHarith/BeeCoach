@@ -8,10 +8,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>Spelling Bee</h1>
+        <h1>Practice for Spelling Bee</h1>
 
         <div class="info">
-            <p>Word: <span id="word-number">{{ current_word_number }}</span>/<span id="total-words">{{ total_words }}</span></p>
+            <p>Now playing word: <span id="word-number">{{ current_word_number }}</span>/<span id="total-words">{{ total_words }}</span></p>
             <p>Score: Correct: <span id="correct">{{ score.correct }}</span> | Incorrect: <span id="incorrect">{{ score.incorrect }}</span></p>
         </div>
 
@@ -24,8 +24,9 @@
             <button onclick="startPractice()" class="btn">Start Practice</button>
             <button onclick="nextWord()" class="btn">Next Word</button>
             <button onclick="repeatWord()" class="btn">Repeat</button>
+            <button onclick="randomizeList()" class="btn">Randomize</button>
             <button onclick="resetGame()" class="btn warning">Reset</button>
-            <button onclick="randomizeList()" class="btn info">Randomize</button>
+
         </div>
 
         <a href="/results" class="results-link">Results</a>
@@ -46,9 +47,9 @@
                 audio.play();
                 currentWord = data.word;
             })
-        .catch(error => {
-            console.error('Error fetching audio:', error);
-            // Optionally, display an error message to the user
+            .catch(error => {
+                console.error('Error fetching audio:', error);
+                // Optionally, display an error message to the user
             });
     }
 
@@ -72,6 +73,7 @@
             document.getElementById('word-number').innerText = data.next_word_number;
             document.getElementById('user-input').value = '';
             playAudio(data.word);
+            document.getElementById('user-input').focus();
         });
     }
 
@@ -81,18 +83,21 @@
             .then(data => {
                 document.getElementById('word-number').textContent = data.word_number;
                 playAudio(data.word);
+                document.getElementById('user-input').focus();
             });
     }
 
     function repeatWord() {
         if (currentWord) {
             audio.play();
+            document.getElementById('user-input').focus();
         } else {
             fetch('/repeat_word')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         playAudio(data.word);
+                        document.getElementById('user-input').focus();
                     }
                 });
         }
@@ -108,8 +113,7 @@
                     document.getElementById('word-number').innerText = data.word_number;
                     document.getElementById('result').innerText = '';
                     document.getElementById('user-input').value = '';
-                    currentWord = "";
-                    startPractice();
+                    document.getElementById('user-input').focus();
                 }
             });
     }
@@ -120,27 +124,19 @@
             .then(data => {
                 if (data.success) {
                     document.getElementById('word-number').innerText = data.word_number;
-                    document.getElementById('result').innerText = 'Word list randomized!';
                     playAudio(data.word);
+                    document.getElementById('user-input').focus();
                 }
             });
     }
 
-    // Add event listener for Enter key
-    document.getElementById('user-input').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter' && currentWord) {
-            e.preventDefault();
+    document.getElementById('user-input').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
             submitWord();
+            document.getElementById('user-input').focus();
         }
     });
 
-    // Focus on input field when page loads
-    window.onload = function() {
-        document.getElementById('user-input').focus();
-    };
-
-    // Start practice when the page loads
-    startPractice();
     </script>
 </body>
 </html>

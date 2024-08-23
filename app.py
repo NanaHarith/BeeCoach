@@ -1,11 +1,11 @@
 import os
+import random
 import base64
 from io import BytesIO
 from flask import Flask, render_template, request, jsonify, session
 from flask_socketio import SocketIO
 import csv
 from gtts import gTTS
-import random
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -13,12 +13,10 @@ socketio = SocketIO(app)
 
 words_list = []
 
-
 def read_words(file):
     with open(file, 'r') as f:
         reader = csv.DictReader(f)
         return [row['Words'] for row in reader]
-
 
 @app.before_request
 def before_request():
@@ -27,7 +25,7 @@ def before_request():
         session['correct_words'] = []
         session['incorrect_words'] = []
         session['current_word_index'] = 0
-
+    session.modified = True
 
 @app.route('/')
 def index():
@@ -40,7 +38,6 @@ def index():
 
     return render_template('index.html', total_words=len(words_list), score=session['score'],
                            current_word_number=session['current_word_index'] + 1)
-
 
 @app.route('/get_audio', methods=['GET'])
 def get_audio():
@@ -61,13 +58,11 @@ def get_audio():
         'word': current_word
     })
 
-
 @app.route('/start_practice', methods=['POST'])
 def start_practice():
     global words_list
     current_word = words_list[session['current_word_index']]
     return jsonify({'success': True, 'word': current_word})
-
 
 @app.route('/submit', methods=['POST'])
 def submit():
@@ -84,20 +79,20 @@ def submit():
         session['score']['incorrect'] += 1
         session['incorrect_words'].append(current_word)
 
+    # Increment the word index and reset if necessary
     session['current_word_index'] += 1
     if session['current_word_index'] >= len(words_list):
         session['current_word_index'] = 0
 
     next_word = words_list[session['current_word_index']]
-
     session.modified = True
+
     return jsonify({
         'result': result,
         'score': session['score'],
         'next_word_number': session['current_word_index'] + 1,
         'word': next_word
     })
-
 
 @app.route('/next_word')
 def next_word():
@@ -113,7 +108,6 @@ def next_word():
         'word': current_word
     })
 
-
 @app.route('/repeat_word')
 def repeat_word():
     global words_list
@@ -122,7 +116,6 @@ def repeat_word():
         'success': True,
         'word': current_word
     })
-
 
 @app.route('/reset', methods=['POST'])
 def reset():
@@ -137,19 +130,17 @@ def reset():
         'word_number': session['current_word_index'] + 1
     })
 
-
 @app.route('/results')
 def results():
     return render_template('results.html', score=session['score'],
                            correct_words=session['correct_words'],
                            incorrect_words=session['incorrect_words'])
+
 @app.route('/randomize', methods=['POST'])
 def randomize():
     global words_list
-    print("Randomizing..")
     random.shuffle(words_list)
-    session['current_word_index'] = 0
-    print(current_word)
+   # session['current_word_index'] = 0
     current_word = words_list[session['current_word_index']]
     session.modified = True
     return jsonify({

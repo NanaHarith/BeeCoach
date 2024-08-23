@@ -145,10 +145,11 @@ h1 {
     text-decoration: none;
 }
 /* Add this to your existing CSS file */
+/*
 .btn.info {
     background-color: #3498db;
 }
 
 .btn.info:hover {
     background-color: #2980b9;
-}
+}*/
