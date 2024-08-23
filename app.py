@@ -44,6 +44,8 @@ def index():
 @app.route('/get_audio', methods=['GET'])
 def get_audio():
     global words_list
+    if session['current_word_index'] >= len(words_list):
+        session['current_word_index'] = 0
     current_word = words_list[session['current_word_index']]
 
     # Generate audio data
@@ -63,6 +65,8 @@ def get_audio():
 @app.route('/start_practice', methods=['POST'])
 def start_practice():
     global words_list
+    if session['current_word_index'] >= len(words_list):
+        session['current_word_index'] = 0
     current_word = words_list[session['current_word_index']]
     return jsonify({'success': True, 'word': current_word})
 
@@ -70,6 +74,8 @@ def start_practice():
 def submit():
     global words_list
     user_input = request.form['user_input']
+    if session['current_word_index'] >= len(words_list):
+        session['current_word_index'] = 0
     current_word = words_list[session['current_word_index']]
 
     if user_input.lower() == current_word.lower():
@@ -113,6 +119,8 @@ def next_word():
 @app.route('/repeat_word')
 def repeat_word():
     global words_list
+    if session['current_word_index'] >= len(words_list):
+        session['current_word_index'] = 0
     current_word = words_list[session['current_word_index']]
     return jsonify({
         'success': True,
@@ -142,7 +150,6 @@ def results():
 def randomize():
     global words_list
     random.shuffle(words_list)
-   # session['current_word_index'] = 0
     current_word = words_list[session['current_word_index']]
     session.modified = True
     return jsonify({
