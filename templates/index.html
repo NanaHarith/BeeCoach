@@ -25,6 +25,7 @@
             <button onclick="nextWord()" class="btn">Next Word</button>
             <button onclick="repeatWord()" class="btn">Repeat</button>
             <button onclick="resetGame()" class="btn warning">Reset</button>
+            <button onclick="randomizeList()" class="btn info">Randomize</button>
         </div>
 
         <a href="/results" class="results-link">Results</a>
@@ -35,6 +36,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
     let audio = new Audio();
+    let currentWord = "";
 
     function playAudio(word) {
         fetch('/get_audio')
@@ -42,6 +44,7 @@
             .then(data => {
                 audio.src = 'data:audio/mp3;base64,' + data.audio_data;
                 audio.play();
+                currentWord = data.word;
             });
     }
 
@@ -78,13 +81,17 @@
     }
 
     function repeatWord() {
-        fetch('/repeat_word')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    playAudio(data.word);
-                }
-            });
+        if (currentWord) {
+            audio.play();
+        } else {
+            fetch('/repeat_word')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        playAudio(data.word);
+                    }
+                });
+        }
     }
 
     function resetGame() {
@@ -97,14 +104,28 @@
                     document.getElementById('word-number').innerText = data.word_number;
                     document.getElementById('result').innerText = '';
                     document.getElementById('user-input').value = '';
+                    currentWord = "";
                     startPractice();
+                }
+            });
+    }
+
+    function randomizeList() {
+        fetch('/randomize', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('word-number').innerText = data.word_number;
+                    document.getElementById('result').innerText = 'Word list randomized!';
+                    playAudio(data.word);
                 }
             });
     }
 
     // Add event listener for Enter key
     document.getElementById('user-input').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && currentWord) {
+            e.preventDefault();
             submitWord();
         }
     });
@@ -113,6 +134,9 @@
     window.onload = function() {
         document.getElementById('user-input').focus();
     };
+
+    // Start practice when the page loads
+    startPractice();
     </script>
 </body>
 </html>

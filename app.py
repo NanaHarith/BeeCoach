@@ -142,7 +142,18 @@ def results():
     return render_template('results.html', score=session['score'],
                            correct_words=session['correct_words'],
                            incorrect_words=session['incorrect_words'])
-
+@app.route('/randomize', methods=['POST'])
+def randomize():
+    global words_list
+    random.shuffle(words_list)
+    session['current_word_index'] = 0
+    current_word = words_list[session['current_word_index']]
+    session.modified = True
+    return jsonify({
+        'success': True,
+        'word_number': session['current_word_index'] + 1,
+        'word': current_word
+    })
 
 if __name__ == '__main__':
     words_list = read_words('static/words.csv')
