@@ -12,102 +12,69 @@
 
     <p>Score: Correct: <span id="correct">{{ score.correct }}</span> | Incorrect: <span id="incorrect">{{ score.incorrect }}</span></p>
 
-    <form id="spelling-form" style="display:none;">
-        <input type="text" id="user-input" name="user_input" required autofocus>
-        <button type="submit">Submit</button>
-    </form>
-
-    <button id="start-practice">Start Practice</button>
-    <button id="next-word" style="display:none;">Next Word</button>
-    <button id="repeat" style="display:none;">Repeat</button>
+    <input type="text" id="user-input">
+    <button onclick="submitWord()">Submit</button>
+    <button onclick="startPractice()">Start Practice</button>
+    <button onclick="nextWord()">Next Word</button>
+    <button onclick="repeatWord()">Repeat</button>
 
     <a href="/results">Results</a>
 
     <div id="result"></div>
 
-    <audio id="wordAudio" controls style="display: none;"></audio>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const startPracticeButton = document.getElementById('start-practice');
-            const form = document.getElementById('spelling-form');
-            const userInput = document.getElementById('user-input');
-            const nextWordButton = document.getElementById('next-word');
-            const repeatButton = document.getElementById('repeat');
-            const wordNumberElement = document.getElementById('word-number');
-            const resultElement = document.getElementById('result');
-            const wordAudio = document.getElementById('wordAudio');  // Reference the audio element
+    let audio = new Audio();
 
-            startPracticeButton.addEventListener('click', function() {
-                fetch('/start_practice', {
-                    method: 'POST'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        form.style.display = 'block';
-                        startPracticeButton.style.display = 'none';
-                        nextWordButton.style.display = 'block';
-                        repeatButton.style.display = 'block';
-                    }
-                });
+    function playAudio(word) {
+        fetch('/get_audio')
+            .then(response => response.json())
+            .then(data => {
+                audio.src = 'data:audio/mp3;base64,' + data.audio_data;
+                audio.play();
             });
+    }
 
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                fetch('/submit', {
-                    method: 'POST',
-                    body: new FormData(form)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    resultElement.textContent = data.result;
-                    updateScore(data.score);
-                    wordNumberElement.textContent = data.next_word_number;
-                    userInput.value = '';
-                    userInput.focus();
-
-                    // Update audio source and play when new word received
-                    wordAudio.src = "/static/tempWord.mp3";  // Set source based on your file path
-                    wordAudio.load();  // Load the audio data
-                    wordAudio.play();   // Start playback
-                });
+    function startPractice() {
+        fetch('/start_practice', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    playAudio(data.word);
+                }
             });
+    }
 
-            nextWordButton.addEventListener('click', function() {
-                fetch('/next_word')
-                .then(response => response.json())
-                .then(data => {
-                    wordNumberElement.textContent = data.word_number;
-                    userInput.value = '';
-                    userInput.focus();
-
-                    // Update audio source and play when next word requested
-                    wordAudio.src = "/static/tempWord.mp3";
-                    wordAudio.load();
-                    wordAudio.play();
-                });
-            });
-
-            repeatButton.addEventListener('click', function() {
-                fetch('/repeat_word')
-                .then(response => response.json());
-
-                // Update audio source and play on repeat button click
-                wordAudio.src = "/static/tempWord.mp3";
-                wordAudio.load();
-                wordAudio.play();
-            });
-
-            function updateScore(score) {
-                document.getElementById('correct').textContent = score.correct;
-                document.getElementById('incorrect').textContent = score.incorrect;
-            }
-
-            // Set focus to input field when page loads
-            userInput.focus();
+    function submitWord() {
+        let userInput = document.getElementById('user-input').value;
+        $.post('/submit', { user_input: userInput }, function(data) {
+            document.getElementById('result').innerText = data.result;
+            document.getElementById('correct').innerText = data.score.correct;
+            document.getElementById('incorrect').innerText = data.score.incorrect;
+            document.getElementById('word-number').innerText = data.next_word_number;
+            document.getElementById('user-input').value = '';
+            playAudio(data.word);
         });
+    }
+
+    function nextWord() {
+        fetch('/next_word')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('word-number').textContent = data.word_number;
+                playAudio(data.word);
+            });
+    }
+
+    function repeatWord() {
+        fetch('/repeat_word')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    playAudio(data.word);
+                }
+            });
+    }
     </script>
 </body>
 </html>
