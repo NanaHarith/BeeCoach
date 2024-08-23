@@ -16,7 +16,9 @@ words_list = []
 def read_words(file):
     with open(file, 'r') as f:
         reader = csv.DictReader(f)
-        return [row['Words'] for row in reader]
+        words = [row['Words'] for row in reader]
+        print(f"Loaded {len(words)} words from {file}")
+        return words
 
 @app.before_request
 def before_request():
