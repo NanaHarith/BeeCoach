@@ -8,9 +8,8 @@ import csv
 import threading
 import queue
 import time
-import pyttsx3
-import tempfile
-import wave
+from functools import lru_cache
+from gtts import gTTS
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -18,18 +17,12 @@ socketio = SocketIO(app)
 
 # Use thread-local storage for session-like data
 from threading import local
-
 thread_local = local()
 
 # Global variables
 words_list = []
 audio_cache = {}
 audio_queue = queue.Queue()
-audio_cache_dir = os.path.join(tempfile.gettempdir(), 'audio_cache')
-
-# Ensure the audio cache directory exists
-os.makedirs(audio_cache_dir, exist_ok=True)
-
 
 def read_words(file):
     with open(file, 'r') as f:
@@ -38,21 +31,13 @@ def read_words(file):
     print(f"Loaded {len(words)} words from {file}")
     return words
 
-
+@lru_cache(maxsize=1000)
 def generate_audio(word):
-    # Generate a unique filename for the word
-    filename = os.path.join(audio_cache_dir, f"{word.lower()}.wav")
-
-    if not os.path.exists(filename):
-        engine = pyttsx3.init()
-        engine.save_to_file(word, filename)
-        engine.runAndWait()
-
-    # Read the wave file and encode it to base64
-    with wave.open(filename, 'rb') as wav_file:
-        audio_data = wav_file.readframes(wav_file.getnframes())
-        return base64.b64encode(audio_data).decode('utf-8')
-
+    tts = gTTS(text=word, lang='en')
+    fp = BytesIO()
+    tts.write_to_fp(fp)
+    fp.seek(0)
+    return base64.b64encode(fp.getvalue()).decode('utf-8')
 
 def audio_worker():
     while True:
@@ -64,7 +49,6 @@ def audio_worker():
                 print(f"Error generating audio for '{word}': {str(e)}")
         audio_queue.task_done()
 
-
 def initialize_app():
     global words_list
     if not words_list:
@@ -74,7 +58,6 @@ def initialize_app():
 
         for _ in range(4):  # Start 4 worker threads
             threading.Thread(target=audio_worker, daemon=True).start()
-
 
 @app.before_request
 def before_request():
@@ -87,14 +70,11 @@ def before_request():
             'current_word_index': 0
         }
 
-
 def get_session_data():
     return thread_local.session_data
 
-
 def update_session_data(key, value):
     thread_local.session_data[key] = value
-
 
 @app.route('/')
 def index():
@@ -103,7 +83,6 @@ def index():
         update_session_data('current_word_index', 0)
     return render_template('index.html', total_words=len(words_list), score=session_data['score'],
                            current_word_number=session_data['current_word_index'] + 1)
-
 
 @app.route('/get_audio', methods=['GET'])
 def get_audio():
@@ -124,7 +103,6 @@ def get_audio():
         'word': current_word
     })
 
-
 @app.route('/start_practice', methods=['POST'])
 def start_practice():
     session_data = get_session_data()
@@ -132,7 +110,6 @@ def start_practice():
         update_session_data('current_word_index', 0)
     current_word = words_list[session_data['current_word_index']]
     return jsonify({'success': True, 'word': current_word})
-
 
 @app.route('/submit', methods=['POST'])
 def submit():
@@ -164,7 +141,6 @@ def submit():
         'word': next_word
     })
 
-
 @app.route('/next_word', methods=['GET'])
 def next_word():
     session_data = get_session_data()
@@ -178,7 +154,6 @@ def next_word():
         'word': current_word
     })
 
-
 @app.route('/repeat_word', methods=['GET'])
 def repeat_word():
     session_data = get_session_data()
@@ -189,7 +164,6 @@ def repeat_word():
         'success': True,
         'word': current_word
     })
-
 
 @app.route('/reset', methods=['POST'])
 def reset():
@@ -204,14 +178,12 @@ def reset():
         'word_number': session_data['current_word_index'] + 1
     })
 
-
 @app.route('/results')
 def results():
     session_data = get_session_data()
     return render_template('results.html', score=session_data['score'],
                            correct_words=session_data['correct_words'],
                            incorrect_words=session_data['incorrect_words'])
-
 
 @app.route('/randomize', methods=['POST'])
 def randomize():
@@ -224,7 +196,6 @@ def randomize():
         'word_number': session_data['current_word_index'] + 1,
         'word': current_word
     })
-
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
