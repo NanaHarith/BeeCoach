@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-   # <meta name="viewport" content="width=device-width>
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spelling Bee</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
@@ -27,7 +26,6 @@
             <button onclick="repeatWord()" class="btn">Repeat</button>
             <button onclick="randomizeList()" class="btn">Randomize</button>
             <button onclick="resetGame()" class="btn warning">Reset</button>
-
         </div>
 
         <a href="/results" class="results-link">Results</a>
@@ -37,107 +35,103 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-    let audio = new Audio();
-    let currentWord = "";
+        let audio = new Audio();
+        let currentWord = "";
 
-    function playAudio(word) {
-        fetch('/get_audio')
-            .then(response => response.json())
-            .then(data => {
-                audio.src = 'data:audio/mp3;base64,' + data.audio_data;
-                audio.play();
-                currentWord = data.word;
-            })
-            .catch(error => {
-                console.error('Error fetching audio:', error);
-                // Optionally, display an error message to the user
-            });
-    }
+        function playAudio() {
+            fetch('/get_audio')
+                .then(response => response.blob())
+                .then(blob => {
+                    const audioUrl = URL.createObjectURL(blob);
+                    audio.src = audioUrl;
+                    audio.play();
+                })
+                .catch(error => console.error('Error:', error));
+        }
 
-    function startPractice() {
-        fetch('/start_practice', { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    playAudio(data.word);
-                    document.getElementById('user-input').focus();
-                }
-            });
-    }
-
-    function submitWord() {
-        let userInput = document.getElementById('user-input').value;
-        $.post('/submit', { user_input: userInput }, function(data) {
-            document.getElementById('result').innerText = data.result;
-            document.getElementById('correct').innerText = data.score.correct;
-            document.getElementById('incorrect').innerText = data.score.incorrect;
-            document.getElementById('word-number').innerText = data.next_word_number;
-            document.getElementById('user-input').value = '';
-            playAudio(data.word);
-            document.getElementById('user-input').focus();
-        });
-    }
-
-    function nextWord() {
-        fetch('/next_word')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('word-number').textContent = data.word_number;
-                playAudio(data.word);
-                document.getElementById('user-input').focus();
-            });
-    }
-
-    function repeatWord() {
-        if (currentWord) {
-            audio.play();
-            document.getElementById('user-input').focus();
-        } else {
-            fetch('/repeat_word')
+        function startPractice() {
+            fetch('/start_practice', { method: 'POST' })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        playAudio(data.word);
+                        playAudio();
                         document.getElementById('user-input').focus();
                     }
                 });
         }
-    }
 
-    function resetGame() {
-        fetch('/reset', { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('correct').innerText = data.score.correct;
-                    document.getElementById('incorrect').innerText = data.score.incorrect;
-                    document.getElementById('word-number').innerText = data.word_number;
-                    document.getElementById('result').innerText = '';
-                    document.getElementById('user-input').value = '';
-                    document.getElementById('user-input').focus();
-                }
+        function submitWord() {
+            let userInput = document.getElementById('user-input').value;
+            $.post('/submit', { user_input: userInput }, function(data) {
+                document.getElementById('result').innerText = data.result;
+                document.getElementById('correct').innerText = data.score.correct;
+                document.getElementById('incorrect').innerText = data.score.incorrect;
+                document.getElementById('word-number').innerText = data.next_word_number;
+                document.getElementById('user-input').value = '';
+                playAudio();
+                document.getElementById('user-input').focus();
             });
-    }
-
-    function randomizeList() {
-        fetch('/randomize', { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('word-number').innerText = data.word_number;
-                    playAudio(data.word);
-                    document.getElementById('user-input').focus();
-                }
-            });
-    }
-
-    document.getElementById('user-input').addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-            submitWord();
-            document.getElementById('user-input').focus();
         }
-    });
 
+        function nextWord() {
+            fetch('/next_word')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('word-number').textContent = data.word_number;
+                    playAudio();
+                    document.getElementById('user-input').focus();
+                });
+        }
+
+        function repeatWord() {
+            if (currentWord) {
+                audio.play();
+                document.getElementById('user-input').focus();
+            } else {
+                fetch('/repeat_word')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            playAudio();
+                            document.getElementById('user-input').focus();
+                        }
+                    });
+            }
+        }
+
+        function resetGame() {
+            fetch('/reset', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('correct').innerText = data.score.correct;
+                        document.getElementById('incorrect').innerText = data.score.incorrect;
+                        document.getElementById('word-number').innerText = data.word_number;
+                        document.getElementById('result').innerText = '';
+                        document.getElementById('user-input').value = '';
+                        document.getElementById('user-input').focus();
+                    }
+                });
+        }
+
+        function randomizeList() {
+            fetch('/randomize', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('word-number').innerText = data.word_number;
+                        playAudio();
+                        document.getElementById('user-input').focus();
+                    }
+                });
+        }
+
+        document.getElementById('user-input').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                submitWord();
+                document.getElementById('user-input').focus();
+            }
+        });
     </script>
 </body>
 </html>
