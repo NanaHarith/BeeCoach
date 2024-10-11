@@ -105,7 +105,99 @@ def get_audio():
         'word': current_word
     })
 
-# ... [rest of the routes remain the same] ...
+@app.route('/start_practice', methods=['POST'])
+def start_practice():
+    session_data = get_session_data()
+    if session_data['current_word_index'] >= len(words_list):
+        update_session_data('current_word_index', 0)
+    current_word = words_list[session_data['current_word_index']]
+    return jsonify({'success': True, 'word': current_word})
+
+@app.route('/submit', methods=['POST'])
+def submit():
+    user_input = request.form['user_input']
+    session_data = get_session_data()
+    if session_data['current_word_index'] >= len(words_list):
+        update_session_data('current_word_index', 0)
+    current_word = words_list[session_data['current_word_index']]
+
+    if user_input.lower() == current_word.lower():
+        result = "Correct!"
+        session_data['score']['correct'] += 1
+        session_data['correct_words'].append(current_word)
+    else:
+        result = f"Incorrect. The correct spelling is: {current_word}"
+        session_data['score']['incorrect'] += 1
+        session_data['incorrect_words'].append(current_word)
+
+    session_data['current_word_index'] += 1
+    if session_data['current_word_index'] >= len(words_list):
+        update_session_data('current_word_index', 0)
+
+    next_word = words_list[session_data['current_word_index']]
+
+    return jsonify({
+        'result': result,
+        'score': session_data['score'],
+        'next_word_number': session_data['current_word_index'] + 1,
+        'word': next_word
+    })
+
+@app.route('/next_word', methods=['GET'])
+def next_word():
+    session_data = get_session_data()
+    session_data['current_word_index'] += 1
+    if session_data['current_word_index'] >= len(words_list):
+        update_session_data('current_word_index', 0)
+
+    current_word = words_list[session_data['current_word_index']]
+    return jsonify({
+        'word_number': session_data['current_word_index'] + 1,
+        'word': current_word
+    })
+
+@app.route('/repeat_word', methods=['GET'])
+def repeat_word():
+    session_data = get_session_data()
+    if session_data['current_word_index'] >= len(words_list):
+        update_session_data('current_word_index', 0)
+    current_word = words_list[session_data['current_word_index']]
+    return jsonify({
+        'success': True,
+        'word': current_word
+    })
+
+@app.route('/reset', methods=['POST'])
+def reset():
+    update_session_data('score', {'correct': 0, 'incorrect': 0})
+    update_session_data('correct_words', [])
+    update_session_data('incorrect_words', [])
+    update_session_data('current_word_index', 0)
+    session_data = get_session_data()
+    return jsonify({
+        'success': True,
+        'score': session_data['score'],
+        'word_number': session_data['current_word_index'] + 1
+    })
+
+@app.route('/results')
+def results():
+    session_data = get_session_data()
+    return render_template('results.html', score=session_data['score'],
+                           correct_words=session_data['correct_words'],
+                           incorrect_words=session_data['incorrect_words'])
+
+@app.route('/randomize', methods=['POST'])
+def randomize():
+    global words_list
+    random.shuffle(words_list)
+    session_data = get_session_data()
+    current_word = words_list[session_data['current_word_index']]
+    return jsonify({
+        'success': True,
+        'word_number': session_data['current_word_index'] + 1,
+        'word': current_word
+    })
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
