@@ -36,11 +36,14 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         let audio = new Audio();
-        let currentWord = "";
 
         function playAudio() {
+            console.log('Playing audio');
             fetch('/get_audio')
-                .then(response => response.blob())
+                .then(response => {
+                    if (!response.ok) throw new Error('Audio file not found');
+                    return response.blob();
+                })
                 .then(blob => {
                     const audioUrl = URL.createObjectURL(blob);
                     audio.src = audioUrl;
@@ -50,6 +53,7 @@
         }
 
         function startPractice() {
+            console.log('Starting practice');
             fetch('/start_practice', { method: 'POST' })
                 .then(response => response.json())
                 .then(data => {
@@ -57,12 +61,15 @@
                         playAudio();
                         document.getElementById('user-input').focus();
                     }
-                });
+                })
+                .catch(error => console.error('Error:', error));
         }
 
         function submitWord() {
+            console.log('Submitting word');
             let userInput = document.getElementById('user-input').value;
             $.post('/submit', { user_input: userInput }, function(data) {
+                console.log('Word submission response:', data);
                 document.getElementById('result').innerText = data.result;
                 document.getElementById('correct').innerText = data.score.correct;
                 document.getElementById('incorrect').innerText = data.score.incorrect;
@@ -70,39 +77,36 @@
                 document.getElementById('user-input').value = '';
                 playAudio();
                 document.getElementById('user-input').focus();
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                console.error('Error submitting word:', textStatus, errorThrown);
             });
         }
 
         function nextWord() {
+            console.log('Fetching next word');
             fetch('/next_word')
                 .then(response => response.json())
                 .then(data => {
+                    console.log('Next word data:', data);
                     document.getElementById('word-number').textContent = data.word_number;
-                    playAudio();
+                    playAudio();  // Play audio after fetching the next word
                     document.getElementById('user-input').focus();
-                });
+                })
+                .catch(error => console.error('Error:', error));
         }
 
         function repeatWord() {
-            if (currentWord) {
-                audio.play();
-                document.getElementById('user-input').focus();
-            } else {
-                fetch('/repeat_word')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            playAudio();
-                            document.getElementById('user-input').focus();
-                        }
-                    });
-            }
+            console.log('Repeating word');
+            playAudio();  // Play audio of the current word
+            document.getElementById('user-input').focus();
         }
 
         function resetGame() {
+            console.log('Resetting game');
             fetch('/reset', { method: 'POST' })
                 .then(response => response.json())
                 .then(data => {
+                    console.log('Reset response:', data);
                     if (data.success) {
                         document.getElementById('correct').innerText = data.score.correct;
                         document.getElementById('incorrect').innerText = data.score.incorrect;
@@ -111,13 +115,14 @@
                         document.getElementById('user-input').value = '';
                         document.getElementById('user-input').focus();
                     }
-                });
+                })
+                .catch(error => console.error('Error:', error));
         }
 
+        // Submit when Enter is pressed
         document.getElementById('user-input').addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
                 submitWord();
-                document.getElementById('user-input').focus();
             }
         });
     </script>
