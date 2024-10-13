@@ -36,21 +36,31 @@ h1, h2 {
 }
 
 /* Input and Button Styles */
-input[type="text"], button {
+input[type="text"] {
     display: block;
-    width: calc(100% - 22px); /* Adjust width to account for padding and border */
+    width: calc(100% - 22px); /* Adjust width to be slightly smaller */
     padding: 10px;
-    margin: 10px 0;
+    margin: 10px auto; /* Centering the input */
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 16px;
+    box-sizing: border-box; /* Include padding in width calculation */
 }
 
 button {
+    display: block; /* Ensure buttons are block elements */
+    width: calc(100% - 22px); /* Align to Input box */
+    padding: 10px;
+    margin: 10px auto; /* Centering buttons */
+
     background-color: var(--primary-color);
     color: white;
+
     border: none;
+    border-radius: 4px;
+
     cursor: pointer;
+
     transition: background-color 0.3s ease;
 }
 
@@ -69,10 +79,11 @@ button:hover {
 /* Controls Section */
 #controls {
     margin-top: 20px;
+
 }
 
 #controls button {
-    width: 100%;
+    width: calc(100% - 22px);
     margin-bottom: 10px;
 }
 
@@ -87,7 +98,28 @@ button:hover {
 #results-link:hover {
     text-decoration :underline;
 }
+/* Style for list items */
+#correct-responses li, #incorrect-responses li {
+    margin-bottom: 5px;
+    padding: 5px;
+    border-radius: 4px;
+}
 
+#correct-responses li {
+    background-color: #e6f3e6; /* Light green background for correct responses */
+}
+
+#incorrect-responses li {
+    background-color: #f8e6e6; /* Light red background for incorrect responses */
+}
+/* Caution Message */
+#caution-message {
+  text-align: center;
+  color: red;
+  font-weight: bold;
+  font-size: 18px;
+  margin: 20px 0;
+}
 /* Completion Message */
 #completion-message {
     text-align:center;
@@ -118,8 +150,26 @@ button:hover {
     color:variables(error-color);
 }
 
+/* Two-column layout for results */
+.results-columns {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.column {
+    width: 48%; /* Adjust as needed, leaving some space between columns */
+}
+
 /* Responsive Design */
-@media (max-width :768px) {
+@media (max-width: 768px) {
+    .results-columns {
+        flex-direction: column;
+    }
+    .column {
+        width: 100%;
+        margin-bottom: 20px;
+    }
     body { padding :10px; }
 
     h1 { font-size :24px; }
@@ -129,10 +179,5 @@ button:hover {
         margin :5px auto; /* Adjust margins for smaller screens */
         padding :12px;
     }
-
-}
-
-@media (max-width :480px) {
-    h1 { font-size :20px; }
 
 }
