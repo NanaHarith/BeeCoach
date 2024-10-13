@@ -1,155 +1,157 @@
+/* Global Styles */
+:root {
+  --primary-color: #4a90e2;
+  --secondary-color: #f5a623;
+  --background-color: #f0f4f8;
+  --text-color: #333;
+  --success-color: #28a745;
+  --error-color: #dc3545;
+  --hover-color: #8B4513; /* Brown color for button hover */
+}
+
 body {
-    font-family: Arial, sans-serif;
-    line-height: 1.6;
-    color: #333;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
+  font-family: 'Arial', sans-serif;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  margin: 0;
+  padding: 20px;
 }
 
-.container {
-    width: 50%;
-    margin: auto;
-    overflow: hidden;
-    padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
-    margin-top: 20px;
+h1, h2 {
+  color: var(--primary-color);
+  text-align: center;
 }
 
-h1 {
-    color: #2c3e50;
-    text-align: center;
-    margin-bottom: 20px;
+/* Container Styles */
+#practice-area, #results-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
 }
 
-.info {
-    background-color: #ecf0f1;
+/* Input and Button Styles */
+input[type="text"], button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: var(--hover-color);
+}
+
+#submit-btn {
+  background-color: var(--secondary-color);
+}
+
+#submit-btn:hover {
+  background-color: var(--hover-color);
+}
+
+/* Controls Section */
+#controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+#controls button {
+  flex: 1;
+  min-width: 120px;
+}
+
+/* Results Link */
+#results-link {
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: bold;
+}
+
+#results-link:hover {
+  text-decoration: underline;
+}
+
+/* Completion Message */
+#completion-message {
+  text-align: center;
+  font-weight: bold;
+  color: var(--success-color);
+  margin-top: 20px;
+}
+
+/* Results Page Styles */
+#results-container ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+#results-container li {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 5px;
+}
+
+#correct-responses li {
+  color: var(--success-color);
+}
+
+#incorrect-responses li {
+  color: var(--error-color);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  body {
     padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-}
+  }
 
-.input-area {
-    display: flex;
-    margin-bottom: 20px;
-}
+  h1 {
+    font-size: 24px;
+  }
 
-#user-input {
-    flex: 1;
-    padding: 5px;
+  #controls {
+    flex-direction: column;
+  }
+
+  #controls button {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  input[type="text"], button {
     font-size: 16px;
-    border: 1px solid #bdc3c7;
-    border-radius: 5px 0 0 5px;
+    padding: 12px;
+  }
 }
 
-.btn {
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #3498db;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
-}
+@media (max-width: 480px) {
+  h1 {
+    font-size: 20px;
+  }
 
-.btn:hover {
-    background-color: #2980b9;
-}
-
-.btn.primary {
-    background-color: #2ecc71;
-    border-radius: 0 5px 5px 0;
-}
-
-.btn.primary:hover {
-    background-color: #27ae60;
-}
-
-.btn.warning {
-    background-color: #e74c3c;
-}
-
-.btn.warning:hover {
-    background-color: #c0392b;
-}
-
-.controls {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-}
-
-.results-link {
-    display: block;
-    text-align: center;
-    margin-top: 20px;
-    color: #3498db;
-    text-decoration: none;
-}
-
-.result {
-    margin-top: 20px;
+  input[type="text"], button {
+    font-size: 14px;
     padding: 10px;
-    background-color: #f8f9fa;
-    border-radius: 5px;
-    text-align: center;
+  }
 }
-
-/* Results page specific styles */
-.results-summary {
-    background-color: #ecf0f1;
-    padding: 20px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.highlight {
-    font-weight: bold;
-    color: #2c3e50;
-}
-
-.word-lists {
-    display: flex;
-    justify-content: space-between;
-}
-
-.correct-words, .incorrect-words {
-    width: 45%;
-}
-
-.word-lists h2 {
-    color: #2c3e50;
-}
-
-.word-lists ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-.word-lists li {
-    background-color: #f8f9fa;
-    margin-bottom: 5px;
-    padding: 5px 10px;
-    border-radius: 3px;
-}
-
-.back-link {
-    display: block;
-    width: 200px;
-    margin: 20px auto;
-    text-align: center;
-    text-decoration: none;
-}
-/* Add this to your existing CSS file */
-/*
-.btn.info {
-    background-color: #3498db;
-}
-
-.btn.info:hover {
-    background-color: #2980b9;
-}*/

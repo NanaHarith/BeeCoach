@@ -11,7 +11,7 @@
     <div id="practice-area">
         <p>Now playing word: <span id="word-count">0/0</span></p>
         <p>Score: Correct: <span id="correct-count">0</span> | Incorrect: <span id="incorrect-count">0</span></p>
-        <input type="text" id="word-input" placeholder="Type the word here">
+        <input type="text" id="word-input" placeholder="Type the word here" autofocus>
         <button id="submit-btn">Submit</button>
     </div>
     <div id="controls">
@@ -88,11 +88,17 @@
         document.getElementById('start-btn').addEventListener('click', () => {
             currentWordIndex = -1;
             nextWord();
+            refocusInput();
+        });
+        document.getElementById('next-btn').addEventListener('click', () => {
+          nextWord();
+          refocusInput();
         });
 
-        document.getElementById('next-btn').addEventListener('click', nextWord);
-
-        document.getElementById('repeat-btn').addEventListener('click', playCurrentWord);
+        document.getElementById('repeat-btn').addEventListener('click', () => {
+          playCurrentWord();
+          refocusInput();
+        });
 
         document.getElementById('randomize-btn').addEventListener('click', () => {
             const remainingWords = words.slice(currentWordIndex + 1);
@@ -101,6 +107,7 @@
                 [remainingWords[i], remainingWords[j]] = [remainingWords[j], remainingWords[i]];
             }
             words = [...words.slice(0, currentWordIndex + 1), ...remainingWords];
+            refocusInput();
         });
 
         document.getElementById('reset-btn').addEventListener('click', () => {
@@ -113,19 +120,26 @@
             document.getElementById('completion-message').style.display = 'none';
             localStorage.removeItem('spellingBeeResults');
             updateWordCount();
+            refocusInput();
         });
 
         document.getElementById('submit-btn').addEventListener('click', () => {
             checkAnswer();
             nextWord();
+            refocusInput();
         });
 
         document.getElementById('word-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 checkAnswer();
                 nextWord();
+                refocusInput();
             }
         });
+
+        function refocusInput() {
+            document.getElementById('word-input').focus();
+        }
     </script>
 </body>
 </html>
