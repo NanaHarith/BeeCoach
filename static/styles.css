@@ -163,21 +163,46 @@ button:hover {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    #practice-area, #results-container {
+        max-width: 100%; /* Full width on mobile */
+        padding: 15px; /* Slightly reduced padding */
+    }
+
+    input[type="text"], button {
+        width: calc(100% - 20px); /* Adjust for smaller padding */
+        margin: 5px auto;
+        padding: 12px;
+    }
+
     .results-columns {
         flex-direction: column;
     }
+
     .column {
         width: 100%;
         margin-bottom: 20px;
     }
-    body { padding :10px; }
+}
 
-    h1 { font-size :24px; }
-
-    input[type="text"], button {
-        width :100%; /* Full width on smaller screens */
-        margin :5px auto; /* Adjust margins for smaller screens */
-        padding :12px;
+@media (max-width: 480px) {
+    h1 {
+        font-size: 20px;
     }
 
+    #practice-area, #results-container {
+        padding: 10px; /* Further reduced padding for very small screens */
+    }
+
+    input[type="text"], button {
+        width: calc(100% - 10px); /* Adjust for smaller padding */
+        padding: 10px;
+    }
 }
