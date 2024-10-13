@@ -3,59 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spelling Bee Practice</title>
-    <link rel="stylesheet" href="static/css/style.css">
+    <title>Practice for Spelling Bee</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <h1>Practice for Spelling Bee</h1>
-    <form id="practice-form">
-        <p id="current-word"></p>
-        <input type="text" id="user-answer" autofocus>
-        <button id="submit-answer" onclick="submitAnswer()">Submit</button>
-        <button id="play-audio" onclick="playAudio()">Play Audio</button>
-        <button id="next-word" onclick="nextWord()">Next Word</button>
-        <p id="result"></p>
-    </form>
+    <div id="practice-area">
+        <p>Now playing word: <span id="word-count">0/0</span></p>
+        <p>Score: Correct: <span id="correct-count">0</span> | Incorrect: <span id="incorrect-count">0</span></p>
+        <input type="text" id="word-input" placeholder="Type the word here">
+        <button id="submit-btn">Submit</button>
+    </div>
+    <div id="controls">
+        <button id="start-btn">Start Practice</button>
+        <button id="next-btn">Next Word</button>
+        <button id="repeat-btn">Repeat</button>
+        <button id="randomize-btn">Randomize</button>
+        <button id="reset-btn">Reset</button>
+    </div>
+    <a href="{{ url_for('results') }}" id="results-link">Results</a>
+    <p id="completion-message" style="display: none;">Practice complete!</p>
+
     <script>
-        function submitAnswer() {
-            var userAnswer = document.getElementById("user-answer").value;
-            var correctAnswer = document.getElementById("current-word").innerText;
-            fetch("/check_spelling", {
-                method: "POST",
-                body: JSON.stringify({ user_answer: userAnswer, correct_answer: correctAnswer }),
-                headers: { "Content-Type": "application/json" },
-            })
-                .then((response) => response.text())
-                .then((result) => {
-                    document.getElementById("result").innerText = result;
-                });
+        let words = [];
+        let currentWordIndex = -1;
+        let audio = new Audio();
+        let correctCount = 0;
+        let incorrectCount = 0;
+
+        // Fetch words from server
+        fetch('/words')
+            .then(response => response.json())
+            .then(data => {
+                words = data;
+                updateWordCount();
+            });
+
+        function updateWordCount() {
+            document.getElementById('word-count').textContent = `${currentWordIndex + 1}/${words.length}`;
         }
 
-        function playAudio() {
-            var word = document.getElementById("current-word").innerText;
-            fetch("/play_audio", {
-                method: "POST",
-                body: JSON.stringify({ word: word }),
-                headers: { "Content-Type": "application/json" },
-            })
-                .then((response) => response.text())
-                .then((result) => {
-                    console.log(result);
-                });
+        function playCurrentWord() {
+            if (currentWordIndex >= 0 && currentWordIndex < words.length) {
+                audio.src = `/audio/${words[currentWordIndex]}.mp3`;
+                audio.play();
+            }
+        }
+
+        function updateResults(isCorrect, word, userInput) {
+            let results = JSON.parse(localStorage.getItem('spellingBeeResults')) || { correct: [], incorrect: [] };
+            if (isCorrect) {
+                results.correct.push(word);
+            } else {
+                results.incorrect.push({ word: word, userInput: userInput });
+            }
+            localStorage.setItem('spellingBeeResults', JSON.stringify(results));
+        }
+
+        function checkAnswer() {
+            const userInput = document.getElementById('word-input').value.trim().toLowerCase();
+            const correctWord = words[currentWordIndex].toLowerCase();
+            if (userInput === correctWord) {
+                correctCount++;
+                document.getElementById('correct-count').textContent = correctCount;
+                updateResults(true, correctWord, userInput);
+            } else {
+                incorrectCount++;
+                document.getElementById('incorrect-count').textContent = incorrectCount;
+                updateResults(false, correctWord, userInput);
+            }
+            document.getElementById('word-input').value = '';
         }
 
         function nextWord() {
-            var currentWord = document.getElementById("current-word").innerText;
-            fetch("/next_word", {
-                method: "POST",
-                body: JSON.stringify({ current_word: currentWord }),
-                headers: { "Content-Type": "application/json" },
-            })
-                .then((response) => response.text())
-                .then((nextWord) => {
-                    document.getElementById("current-word").innerText = nextWord;
-                });
+            currentWordIndex++;
+            if (currentWordIndex >= words.length) {
+                document.getElementById('completion-message').style.display = 'block';
+                return;
+            }
+            updateWordCount();
+            playCurrentWord();
         }
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            currentWordIndex = -1;
+            nextWord();
+        });
+
+        document.getElementById('next-btn').addEventListener('click', nextWord);
+
+        document.getElementById('repeat-btn').addEventListener('click', playCurrentWord);
+
+        document.getElementById('randomize-btn').addEventListener('click', () => {
+            const remainingWords = words.slice(currentWordIndex + 1);
+            for (let i = remainingWords.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [remainingWords[i], remainingWords[j]] = [remainingWords[j], remainingWords[i]];
+            }
+            words = [...words.slice(0, currentWordIndex + 1), ...remainingWords];
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            currentWordIndex = -1;
+            correctCount = 0;
+            incorrectCount = 0;
+            document.getElementById('correct-count').textContent = '0';
+            document.getElementById('incorrect-count').textContent = '0';
+            document.getElementById('word-input').value = '';
+            document.getElementById('completion-message').style.display = 'none';
+            localStorage.removeItem('spellingBeeResults');
+            updateWordCount();
+        });
+
+        document.getElementById('submit-btn').addEventListener('click', () => {
+            checkAnswer();
+            nextWord();
+        });
+
+        document.getElementById('word-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkAnswer();
+                nextWord();
+            }
+        });
     </script>
 </body>
 </html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Bee Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Spelling Bee Practice Results</h1>
+
+        <div class="results-summary">
+            <p>Total correct: <span class="highlight">{{ correct_score }}</span></p>
+            <p>Total incorrect: <span class="highlight">{{ incorrect_score }}</span></p>
+        </div>
+
+        <div class="word-lists">
+            <div class="correct-words">
+                <h2>Correct Responses:</h2>
+                <ul>
+                {% for word in correct_words %}
+                    <li>{{ word }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+
+            <div class="incorrect-words">
+                <h2>Incorrect Responses:</h2>
+                <ul>
+                {% for word in incorrect_words %}
+                    <li>{{ word }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <a href="/" class="btn back-link">Back to Practice</a>
+    </div>
+</body>
+</html>

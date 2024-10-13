@@ -3,39 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spelling Bee Results</title>
+    <title>Spelling Bee Practice Results</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>Spelling Bee Practice Results</h1>
+    <h1>Spelling Bee Practice Results</h1>
+    <div id="results-container">
+        <p>Total correct: <span id="total-correct">0</span></p>
+        <p>Total incorrect: <span id="total-incorrect">0</span></p>
 
-        <div class="results-summary">
-            <p>Total correct: <span class="highlight">{{ correct_score }}</span></p>
-            <p>Total incorrect: <span class="highlight">{{ incorrect_score }}</span></p>
-        </div>
+        <h2>Correct Responses:</h2>
+        <ul id="correct-responses"></ul>
 
-        <div class="word-lists">
-            <div class="correct-words">
-                <h2>Correct Responses:</h2>
-                <ul>
-                {% for word in correct_words %}
-                    <li>{{ word }}</li>
-                {% endfor %}
-                </ul>
-            </div>
-
-            <div class="incorrect-words">
-                <h2>Incorrect Responses:</h2>
-                <ul>
-                {% for word in incorrect_words %}
-                    <li>{{ word }}</li>
-                {% endfor %}
-                </ul>
-            </div>
-        </div>
-
-        <a href="/" class="btn back-link">Back to Practice</a>
+        <h2>Incorrect Responses:</h2>
+        <ul id="incorrect-responses"></ul>
     </div>
+
+    <button id="back-to-practice">Back to Practice</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const results = JSON.parse(localStorage.getItem('spellingBeeResults')) || { correct: [], incorrect: [] };
+
+            document.getElementById('total-correct').textContent = results.correct.length;
+            document.getElementById('total-incorrect').textContent = results.incorrect.length;
+
+            const correctList = document.getElementById('correct-responses');
+            results.correct.forEach(word => {
+                const li = document.createElement('li');
+                li.textContent = word;
+                correctList.appendChild(li);
+            });
+
+            const incorrectList = document.getElementById('incorrect-responses');
+            results.incorrect.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = `${item.word} (you typed: ${item.userInput})`;
+                incorrectList.appendChild(li);
+            });
+
+            document.getElementById('back-to-practice').addEventListener('click', () => {
+                window.location.href = '/';
+            });
+        });
+    </script>
 </body>
 </html>
