@@ -13,13 +13,14 @@
         <p>Score: Correct: <span id="correct-count">0</span> | Incorrect: <span id="incorrect-count">0</span></p>
         <input type="text" id="word-input" placeholder="Type the word here" autofocus>
         <button id="submit-btn">Submit</button>
-    </div>
-    <div id="controls">
-        <button id="start-btn">Start Practice</button>
-        <button id="next-btn">Next Word</button>
-        <button id="repeat-btn">Repeat</button>
-        <button id="randomize-btn">Randomize</button>
-        <button id="reset-btn">Reset</button>
+
+        <div id="controls">
+            <button id="start-btn">Start Practice</button>
+            <button id="next-btn">Next Word</button>
+            <button id="repeat-btn">Repeat</button>
+            <button id="randomize-btn">Randomize</button>
+            <button id="reset-btn">Reset</button>
+        </div>
     </div>
     <a href="{{ url_for('results') }}" id="results-link">Results</a>
     <p id="completion-message" style="display: none;">Practice complete!</p>

@@ -25,133 +25,114 @@ h1, h2 {
 
 /* Container Styles */
 #practice-area, #results-container {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  margin-bottom: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    max-width: 33.33%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* Input and Button Styles */
 input[type="text"], button {
-  display: block;
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
+    display: block;
+    width: calc(100% - 22px); /* Adjust width to account for padding and border */
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
 }
 
 button {
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 button:hover {
-  background-color: var(--hover-color);
+    background-color: var(--hover-color);
 }
 
 #submit-btn {
-  background-color: var(--secondary-color);
+    background-color: var(--secondary-color);
 }
 
 #submit-btn:hover {
-  background-color: var(--hover-color);
+    background-color: var(--hover-color);
 }
 
 /* Controls Section */
 #controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 20px;
+    margin-top: 20px;
 }
 
 #controls button {
-  flex: 1;
-  min-width: 120px;
+    width: 100%;
+    margin-bottom: 10px;
 }
 
 /* Results Link */
 #results-link {
-  display: block;
-  text-align: center;
-  margin-top: 20px;
-  color: var(--primary-color);
-  text-decoration: none;
-  font-weight: bold;
+    display: block;
+    text-align:center;
+    margin-top :20px;
+    color :var(--primary-color);
 }
 
 #results-link:hover {
-  text-decoration: underline;
+    text-decoration :underline;
 }
 
 /* Completion Message */
 #completion-message {
-  text-align: center;
-  font-weight: bold;
-  color: var(--success-color);
-  margin-top: 20px;
+    text-align:center;
+    font-weight:bold;
+    color:variables(success-color);
+    margin-top=20px;
 }
 
 /* Results Page Styles */
 #results-container ul {
-  list-style-type: none;
-  padding: 0;
+    list-style-type:none;
+    padding=0;
 }
 
 #results-container li {
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 4px;
-  padding: 10px;
-  margin-bottom: 5px;
+    background-color:#f8f9fa;
+    border=1px solid #e9ecef;
+    border-radius=4px;
+    padding=10px;
+    margin-bottom=5px;
 }
 
 #correct-responses li {
-  color: var(--success-color);
+    color:variables(success-color);
 }
 
 #incorrect-responses li {
-  color: var(--error-color);
+    color:variables(error-color);
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
-  body {
-    padding: 10px;
-  }
+@media (max-width :768px) {
+    body { padding :10px; }
 
-  h1 {
-    font-size: 24px;
-  }
+    h1 { font-size :24px; }
 
-  #controls {
-    flex-direction: column;
-  }
+    input[type="text"], button {
+        width :100%; /* Full width on smaller screens */
+        margin :5px auto; /* Adjust margins for smaller screens */
+        padding :12px;
+    }
 
-  #controls button {
-    width: 100%;
-    margin-bottom: 10px;
-  }
-
-  input[type="text"], button {
-    font-size: 16px;
-    padding: 12px;
-  }
 }
 
-@media (max-width: 480px) {
-  h1 {
-    font-size: 20px;
-  }
+@media (max-width :480px) {
+    h1 { font-size :20px; }
 
-  input[type="text"], button {
-    font-size: 14px;
-    padding: 10px;
-  }
 }
