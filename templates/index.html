@@ -3,128 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spelling Bee</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Spelling Bee Practice</title>
+    <link rel="stylesheet" href="static/css/style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Practice for Spelling Bee</h1>
-
-        <div class="info">
-            <p>Now playing word: <span id="word-number">{{ current_word_number }}</span>/<span id="total-words">{{ total_words }}</span></p>
-            <p>Score: Correct: <span id="correct">{{ score.correct }}</span> | Incorrect: <span id="incorrect">{{ score.incorrect }}</span></p>
-        </div>
-
-        <div class="input-area">
-            <input type="text" id="user-input" autofocus>
-            <button onclick="submitWord()" class="btn primary">Submit</button>
-        </div>
-
-        <div class="controls">
-            <button onclick="startPractice()" class="btn">Start Practice</button>
-            <button onclick="nextWord()" class="btn">Next Word</button>
-            <button onclick="repeatWord()" class="btn">Repeat</button>
-            <button onclick="randomizeList()" class="btn">Randomize</button>
-            <button onclick="resetGame()" class="btn warning">Reset</button>
-        </div>
-
-        <a href="/results" class="results-link">Results</a>
-
-        <div id="result" class="result"></div>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <h1>Practice for Spelling Bee</h1>
+    <form id="practice-form">
+        <p id="current-word"></p>
+        <input type="text" id="user-answer" autofocus>
+        <button id="submit-answer" onclick="submitAnswer()">Submit</button>
+        <button id="play-audio" onclick="playAudio()">Play Audio</button>
+        <button id="next-word" onclick="nextWord()">Next Word</button>
+        <p id="result"></p>
+    </form>
     <script>
-        let audio = new Audio();
+        function submitAnswer() {
+            var userAnswer = document.getElementById("user-answer").value;
+            var correctAnswer = document.getElementById("current-word").innerText;
+            fetch("/check_spelling", {
+                method: "POST",
+                body: JSON.stringify({ user_answer: userAnswer, correct_answer: correctAnswer }),
+                headers: { "Content-Type": "application/json" },
+            })
+                .then((response) => response.text())
+                .then((result) => {
+                    document.getElementById("result").innerText = result;
+                });
+        }
 
         function playAudio() {
-            console.log('Playing audio');
-            fetch('/get_audio')
-                .then(response => {
-                    if (!response.ok) throw new Error('Audio file not found');
-                    return response.blob();
-                })
-                .then(blob => {
-                    const audioUrl = URL.createObjectURL(blob);
-                    audio.src = audioUrl;
-                    audio.play();
-                })
-                .catch(error => console.error('Error:', error));
-        }
-
-        function startPractice() {
-            console.log('Starting practice');
-            fetch('/start_practice', { method: 'POST' })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        playAudio();
-                        document.getElementById('user-input').focus();
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        }
-
-        function submitWord() {
-            console.log('Submitting word');
-            let userInput = document.getElementById('user-input').value;
-            $.post('/submit', { user_input: userInput }, function(data) {
-                console.log('Word submission response:', data);
-                document.getElementById('result').innerText = data.result;
-                document.getElementById('correct').innerText = data.score.correct;
-                document.getElementById('incorrect').innerText = data.score.incorrect;
-                document.getElementById('word-number').innerText = data.next_word_number;
-                document.getElementById('user-input').value = '';
-                playAudio();
-                document.getElementById('user-input').focus();
-            }).fail(function(jqXHR, textStatus, errorThrown) {
-                console.error('Error submitting word:', textStatus, errorThrown);
-            });
+            var word = document.getElementById("current-word").innerText;
+            fetch("/play_audio", {
+                method: "POST",
+                body: JSON.stringify({ word: word }),
+                headers: { "Content-Type": "application/json" },
+            })
+                .then((response) => response.text())
+                .then((result) => {
+                    console.log(result);
+                });
         }
 
         function nextWord() {
-            console.log('Fetching next word');
-            fetch('/next_word')
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Next word data:', data);
-                    document.getElementById('word-number').textContent = data.word_number;
-                    playAudio();  // Play audio after fetching the next word
-                    document.getElementById('user-input').focus();
-                })
-                .catch(error => console.error('Error:', error));
+            var currentWord = document.getElementById("current-word").innerText;
+            fetch("/next_word", {
+                method: "POST",
+                body: JSON.stringify({ current_word: currentWord }),
+                headers: { "Content-Type": "application/json" },
+            })
+                .then((response) => response.text())
+                .then((nextWord) => {
+                    document.getElementById("current-word").innerText = nextWord;
+                });
         }
-
-        function repeatWord() {
-            console.log('Repeating word');
-            playAudio();  // Play audio of the current word
-            document.getElementById('user-input').focus();
-        }
-
-        function resetGame() {
-            console.log('Resetting game');
-            fetch('/reset', { method: 'POST' })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Reset response:', data);
-                    if (data.success) {
-                        document.getElementById('correct').innerText = data.score.correct;
-                        document.getElementById('incorrect').innerText = data.score.incorrect;
-                        document.getElementById('word-number').innerText = data.word_number;
-                        document.getElementById('result').innerText = '';
-                        document.getElementById('user-input').value = '';
-                        document.getElementById('user-input').focus();
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        }
-
-        // Submit when Enter is pressed
-        document.getElementById('user-input').addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') {
-                submitWord();
-            }
-        });
     </script>
 </body>
 </html>
