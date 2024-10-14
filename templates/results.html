@@ -47,7 +47,8 @@
                 incorrectList.appendChild(li);
             });
 
-            document.getElementById('back-to-practice').addEventListener('click', () => {
+            document.getElementById('back-to-practice').addEventListener('click', (e) => {
+                e.preventDefault();
                 window.location.href = '/';
             });
         });

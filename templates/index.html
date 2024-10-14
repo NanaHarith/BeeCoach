@@ -11,19 +11,16 @@
     <div id="practice-area">
         <p>Now playing word: <span id="word-count">0/0</span></p>
         <p>Score: Correct: <span id="correct-count">0</span> | Incorrect: <span id="incorrect-count">0</span></p>
-        <input type="text" id="word-input" placeholder="Type the word here" autofocus>
+        <input type="text" id="word-input" placeholder="Type the word here">
         <button id="submit-btn">Submit</button>
-
-        <div id="controls">
-            <button id="start-btn">Start Practice</button>
-            <button id="next-btn">Next Word</button>
-            <button id="repeat-btn">Repeat</button>
-            <button id="randomize-btn">Randomize</button>
-            <button id="reset-btn">Reset</button>
-        </div>
     </div>
-
-    <p id="caution-message">Caution! Seeing Results now will reset your progress!!</p>
+    <div id="controls">
+        <button id="start-btn">Start Practice</button>
+        <button id="next-btn">Next Word</button>
+        <button id="repeat-btn">Repeat</button>
+        <button id="randomize-btn">Randomize</button>
+        <button id="reset-btn">Reset</button>
+    </div>
     <a href="{{ url_for('results') }}" id="results-link">Results</a>
     <p id="completion-message" style="display: none;">Practice complete!</p>
 
@@ -34,16 +31,36 @@
         let correctCount = 0;
         let incorrectCount = 0;
 
-        // Fetch words from server
+        // Fetch words from server and initialize the app
         fetch('/words')
             .then(response => response.json())
             .then(data => {
                 words = data;
-                updateWordCount();
+                initializeApp();
             });
+
+        function initializeApp() {
+            const savedState = JSON.parse(localStorage.getItem('spellingBeePracticeState'));
+            if (savedState) {
+                currentWordIndex = savedState.currentWordIndex;
+                correctCount = savedState.correctCount;
+                incorrectCount = savedState.incorrectCount;
+                words = savedState.words;
+            }
+            updateWordCount();
+            updateScoreDisplay();
+            if (currentWordIndex >= 0) {
+                playCurrentWord();
+            }
+        }
 
         function updateWordCount() {
             document.getElementById('word-count').textContent = `${currentWordIndex + 1}/${words.length}`;
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('correct-count').textContent = correctCount;
+            document.getElementById('incorrect-count').textContent = incorrectCount;
         }
 
         function playCurrentWord() {
@@ -63,19 +80,29 @@
             localStorage.setItem('spellingBeeResults', JSON.stringify(results));
         }
 
+        function saveState() {
+            const state = {
+                currentWordIndex,
+                correctCount,
+                incorrectCount,
+                words
+            };
+            localStorage.setItem('spellingBeePracticeState', JSON.stringify(state));
+        }
+
         function checkAnswer() {
             const userInput = document.getElementById('word-input').value.trim().toLowerCase();
             const correctWord = words[currentWordIndex].toLowerCase();
             if (userInput === correctWord) {
                 correctCount++;
-                document.getElementById('correct-count').textContent = correctCount;
                 updateResults(true, correctWord, userInput);
             } else {
                 incorrectCount++;
-                document.getElementById('incorrect-count').textContent = incorrectCount;
                 updateResults(false, correctWord, userInput);
             }
+            updateScoreDisplay();
             document.getElementById('word-input').value = '';
+            saveState();
         }
 
         function nextWord() {
@@ -86,22 +113,17 @@
             }
             updateWordCount();
             playCurrentWord();
+            saveState();
         }
 
         document.getElementById('start-btn').addEventListener('click', () => {
             currentWordIndex = -1;
             nextWord();
-            refocusInput();
-        });
-        document.getElementById('next-btn').addEventListener('click', () => {
-          nextWord();
-          refocusInput();
         });
 
-        document.getElementById('repeat-btn').addEventListener('click', () => {
-          playCurrentWord();
-          refocusInput();
-        });
+        document.getElementById('next-btn').addEventListener('click', nextWord);
+
+        document.getElementById('repeat-btn').addEventListener('click', playCurrentWord);
 
         document.getElementById('randomize-btn').addEventListener('click', () => {
             const remainingWords = words.slice(currentWordIndex + 1);
@@ -110,39 +132,35 @@
                 [remainingWords[i], remainingWords[j]] = [remainingWords[j], remainingWords[i]];
             }
             words = [...words.slice(0, currentWordIndex + 1), ...remainingWords];
-            refocusInput();
+            saveState();
         });
 
         document.getElementById('reset-btn').addEventListener('click', () => {
             currentWordIndex = -1;
             correctCount = 0;
             incorrectCount = 0;
-            document.getElementById('correct-count').textContent = '0';
-            document.getElementById('incorrect-count').textContent = '0';
             document.getElementById('word-input').value = '';
             document.getElementById('completion-message').style.display = 'none';
             localStorage.removeItem('spellingBeeResults');
+            localStorage.removeItem('spellingBeePracticeState');
             updateWordCount();
-            refocusInput();
+            updateScoreDisplay();
         });
 
         document.getElementById('submit-btn').addEventListener('click', () => {
             checkAnswer();
             nextWord();
-            refocusInput();
         });
 
         document.getElementById('word-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 checkAnswer();
                 nextWord();
-                refocusInput();
             }
         });
 
-        function refocusInput() {
-            document.getElementById('word-input').focus();
-        }
+        // Save state before leaving the page
+        window.addEventListener('beforeunload', saveState);
     </script>
 </body>
 </html>
