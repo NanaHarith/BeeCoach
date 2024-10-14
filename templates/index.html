@@ -52,6 +52,7 @@
             if (currentWordIndex >= 0) {
                 playCurrentWord();
             }
+            focusInputField();
         }
 
         function updateWordCount() {
@@ -114,6 +115,11 @@
             updateWordCount();
             playCurrentWord();
             saveState();
+            focusInputField();
+        }
+
+        function focusInputField() {
+            document.getElementById('word-input').focus();
         }
 
         document.getElementById('start-btn').addEventListener('click', () => {
@@ -121,9 +127,15 @@
             nextWord();
         });
 
-        document.getElementById('next-btn').addEventListener('click', nextWord);
+        document.getElementById('next-btn').addEventListener('click', () => {
+            nextWord();
+            focusInputField();
+        });
 
-        document.getElementById('repeat-btn').addEventListener('click', playCurrentWord);
+        document.getElementById('repeat-btn').addEventListener('click', () => {
+            playCurrentWord();
+            focusInputField();
+        });
 
         document.getElementById('randomize-btn').addEventListener('click', () => {
             const remainingWords = words.slice(currentWordIndex + 1);
@@ -133,6 +145,7 @@
             }
             words = [...words.slice(0, currentWordIndex + 1), ...remainingWords];
             saveState();
+            focusInputField();
         });
 
         document.getElementById('reset-btn').addEventListener('click', () => {
@@ -145,6 +158,7 @@
             localStorage.removeItem('spellingBeePracticeState');
             updateWordCount();
             updateScoreDisplay();
+            focusInputField();
         });
 
         document.getElementById('submit-btn').addEventListener('click', () => {
@@ -161,6 +175,9 @@
 
         // Save state before leaving the page
         window.addEventListener('beforeunload', saveState);
+
+        // Ensure input field is focused on page load
+        window.addEventListener('load', focusInputField);
     </script>
 </body>
 </html>
